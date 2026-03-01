@@ -86,6 +86,13 @@ RUN curl -fsSL "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" | 
     tar -xz --strip-components=1 -C /usr/local/bin linux-amd64/helm && \
     chmod +x /usr/local/bin/helm
 
+# Install OpenTofu (open-source Terraform alternative)
+ARG OPENTOFU_VERSION=1.11.5
+RUN curl -fsSL "https://github.com/opentofu/opentofu/releases/download/v${OPENTOFU_VERSION}/tofu_${OPENTOFU_VERSION}_linux_amd64.zip" -o /tmp/tofu.zip && \
+    unzip -o /tmp/tofu.zip -d /usr/local/bin tofu && \
+    chmod +x /usr/local/bin/tofu && \
+    rm /tmp/tofu.zip
+
 # Install GitHub CLI (gh) via official APT repo
 RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg && \
     chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg && \
