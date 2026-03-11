@@ -117,6 +117,57 @@ RUN KUBESEAL_VERSION=$(curl -sL https://api.github.com/repos/bitnami-labs/sealed
     tar -xz -C /usr/local/bin kubeseal && \
     chmod +x /usr/local/bin/kubeseal
 
+# ── LSP servers for Claude Code language intelligence ──
+
+# npm-based LSP servers: Python (pyright), TypeScript/JavaScript, PHP
+RUN npm install -g pyright typescript-language-server typescript intelephense
+
+# Install Go runtime and gopls LSP server
+ARG GO_VERSION=1.23.6
+RUN curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" | tar -xz -C /usr/local && \
+    /usr/local/go/bin/go install golang.org/x/tools/gopls@latest && \
+    mv /root/go/bin/gopls /usr/local/bin/gopls && \
+    rm -rf /root/go
+ENV PATH="/usr/local/go/bin:${PATH}"
+
+# Install clangd LSP server (C/C++)
+RUN apt-get update && \
+    apt-get install -y clangd && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install rust-analyzer LSP server (Rust) — standalone binary, no full toolchain needed
+RUN RUST_ANALYZER_VERSION=$(curl -sL https://api.github.com/repos/rust-lang/rust-analyzer/releases/latest | jq -r '.tag_name') && \
+    curl -fsSL "https://github.com/rust-lang/rust-analyzer/releases/download/${RUST_ANALYZER_VERSION}/rust-analyzer-x86_64-unknown-linux-gnu.gz" | \
+    gunzip > /usr/local/bin/rust-analyzer && \
+    chmod +x /usr/local/bin/rust-analyzer
+
+# Install lua-language-server (Lua)
+RUN LUA_LS_VERSION=$(curl -sL https://api.github.com/repos/LuaLS/lua-language-server/releases/latest | jq -r '.tag_name') && \
+    mkdir -p /opt/lua-language-server && \
+    curl -fsSL "https://github.com/LuaLS/lua-language-server/releases/download/${LUA_LS_VERSION}/lua-language-server-${LUA_LS_VERSION}-linux-x64.tar.gz" | \
+    tar -xz -C /opt/lua-language-server && \
+    ln -s /opt/lua-language-server/bin/lua-language-server /usr/local/bin/lua-language-server
+
+# Install JDK for Java/Kotlin LSP servers
+RUN apt-get update && \
+    apt-get install -y openjdk-17-jdk-headless && \
+    rm -rf /var/lib/apt/lists/*
+
+# Install kotlin-language-server
+RUN KLS_VERSION=$(curl -sL https://api.github.com/repos/fwcd/kotlin-language-server/releases/latest | jq -r '.tag_name') && \
+    curl -fsSL "https://github.com/fwcd/kotlin-language-server/releases/download/${KLS_VERSION}/server.zip" -o /tmp/kls.zip && \
+    unzip -o /tmp/kls.zip -d /opt/kotlin-language-server && \
+    ln -s /opt/kotlin-language-server/server/bin/kotlin-language-server /usr/local/bin/kotlin-language-server && \
+    rm /tmp/kls.zip
+
+# Install jdtls (Java LSP) — Eclipse JDT Language Server
+RUN JDTLS_VERSION=$(curl -sL https://api.github.com/repos/eclipse-jdtls/eclipse.jdt.ls/releases/latest | jq -r '.tag_name' | sed 's/^v//') && \
+    JDTLS_URL=$(curl -sL https://api.github.com/repos/eclipse-jdtls/eclipse.jdt.ls/releases/latest | jq -r '.assets[] | select(.name | endswith(".tar.gz")) | .browser_download_url' | head -1) && \
+    mkdir -p /opt/jdtls && \
+    curl -fsSL "$JDTLS_URL" | tar -xz -C /opt/jdtls && \
+    printf '#!/bin/bash\nexec java -Declipse.application=org.eclipse.jdt.ls.core.id1 -Dosgi.bundles.defaultStartLevel=4 -Declipse.product=org.eclipse.jdt.ls.core.product -jar /opt/jdtls/plugins/org.eclipse.equinox.launcher_*.jar -configuration /opt/jdtls/config_linux "$@"\n' > /usr/local/bin/jdtls && \
+    chmod +x /usr/local/bin/jdtls
+
 # Install VSCode (using Microsoft's current recommended setup)
 RUN wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /tmp/microsoft.gpg && \
     install -D -o root -g root -m 644 /tmp/microsoft.gpg /usr/share/keyrings/microsoft.gpg && \
