@@ -161,10 +161,9 @@ RUN KLS_VERSION=$(curl -sL https://api.github.com/repos/fwcd/kotlin-language-ser
     rm /tmp/kls.zip
 
 # Install jdtls (Java LSP) — Eclipse JDT Language Server
-RUN JDTLS_VERSION=$(curl -sL https://api.github.com/repos/eclipse-jdtls/eclipse.jdt.ls/releases/latest | jq -r '.tag_name' | sed 's/^v//') && \
-    JDTLS_URL=$(curl -sL https://api.github.com/repos/eclipse-jdtls/eclipse.jdt.ls/releases/latest | jq -r '.assets[] | select(.name | endswith(".tar.gz")) | .browser_download_url' | head -1) && \
+RUN JDTLS_TARBALL=$(curl -sL https://download.eclipse.org/jdtls/snapshots/latest.txt) && \
     mkdir -p /opt/jdtls && \
-    curl -fsSL "$JDTLS_URL" | tar -xz -C /opt/jdtls && \
+    curl -fsSL "https://download.eclipse.org/jdtls/snapshots/${JDTLS_TARBALL}" | tar -xz -C /opt/jdtls && \
     printf '#!/bin/bash\nexec java -Declipse.application=org.eclipse.jdt.ls.core.id1 -Dosgi.bundles.defaultStartLevel=4 -Declipse.product=org.eclipse.jdt.ls.core.product -jar /opt/jdtls/plugins/org.eclipse.equinox.launcher_*.jar -configuration /opt/jdtls/config_linux "$@"\n' > /usr/local/bin/jdtls && \
     chmod +x /usr/local/bin/jdtls
 
