@@ -93,7 +93,7 @@ mcp:
       enabled: true
       image:
         repository: quay.io/containers/kubernetes_mcp_server
-        tag: v0.0.57
+        tag: v0.0.59
       port: 8080
       resources:
         requests:
@@ -108,7 +108,7 @@ mcp:
       enabled: true
       image:
         repository: ghcr.io/controlplaneio-fluxcd/flux-operator-mcp
-        tag: v0.41.1
+        tag: v0.45.0
       port: 8081
       resources:
         requests:
@@ -124,7 +124,7 @@ mcp:
       enabled: false
       image:
         repository: ghcr.io/zekker6/mcp-helm
-        tag: v1.3.1
+        tag: v1.3.3
       port: 8012
       resources:
         requests:
@@ -139,7 +139,7 @@ mcp:
       enabled: false  # Requires HOMEASSISTANT_URL and HOMEASSISTANT_TOKEN
       image:
         repository: ghcr.io/homeassistant-ai/ha-mcp
-        tag: "6.7.1"
+        tag: "7.1.0"
       port: 8087
       resources:
         requests:

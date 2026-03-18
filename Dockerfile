@@ -60,7 +60,7 @@ exec /usr/bin/google-chrome-stable \\\n\
     chmod +x /usr/local/bin/google-chrome
 
 # Install Node.js LTS via NodeSource
-ARG NODE_MAJOR=22
+ARG NODE_MAJOR=24
 RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - && \
     apt-get install -y nodejs && \
     rm -rf /var/lib/apt/lists/* && \
@@ -91,7 +91,7 @@ RUN CRUSH_VERSION=$(curl -sL https://api.github.com/repos/charmbracelet/crush/re
     rm -rf /tmp/crush*
 
 # Install Helm CLI for Kubernetes chart management
-ARG HELM_VERSION=3.17.1
+ARG HELM_VERSION=4.1.3
 RUN curl -fsSL "https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz" | \
     tar -xz --strip-components=1 -C /usr/local/bin linux-amd64/helm && \
     chmod +x /usr/local/bin/helm
@@ -117,13 +117,30 @@ RUN KUBESEAL_VERSION=$(curl -sL https://api.github.com/repos/bitnami-labs/sealed
     tar -xz -C /usr/local/bin kubeseal && \
     chmod +x /usr/local/bin/kubeseal
 
+# Install kubectl CLI for Kubernetes cluster management
+RUN KUBECTL_VERSION=$(curl -sL https://dl.k8s.io/release/stable.txt) && \
+    curl -fsSL "https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl" -o /usr/local/bin/kubectl && \
+    chmod +x /usr/local/bin/kubectl
+
+# Install k9s terminal UI for Kubernetes
+RUN K9S_VERSION=$(curl -sL https://api.github.com/repos/derailed/k9s/releases/latest | jq -r '.tag_name') && \
+    curl -fsSL "https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_amd64.tar.gz" | \
+    tar -xz -C /usr/local/bin k9s && \
+    chmod +x /usr/local/bin/k9s
+
+# Install Flux CLI for GitOps operations
+RUN FLUX_VERSION=$(curl -sL https://api.github.com/repos/fluxcd/flux2/releases/latest | jq -r '.tag_name' | sed 's/^v//') && \
+    curl -fsSL "https://github.com/fluxcd/flux2/releases/download/v${FLUX_VERSION}/flux_${FLUX_VERSION}_linux_amd64.tar.gz" | \
+    tar -xz -C /usr/local/bin flux && \
+    chmod +x /usr/local/bin/flux
+
 # ── LSP servers for Claude Code language intelligence ──
 
 # npm-based LSP servers: Python (pyright), TypeScript/JavaScript, PHP
 RUN npm install -g pyright typescript-language-server typescript intelephense
 
 # Install Go runtime and gopls LSP server
-ARG GO_VERSION=1.23.6
+ARG GO_VERSION=1.26.1
 RUN curl -fsSL "https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz" | tar -xz -C /usr/local && \
     /usr/local/go/bin/go install golang.org/x/tools/gopls@latest && \
     mv /root/go/bin/gopls /usr/local/bin/gopls && \

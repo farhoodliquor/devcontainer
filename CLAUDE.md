@@ -70,7 +70,7 @@ Container start
 
 | File | Purpose |
 |------|---------|
-| `Dockerfile` | Image definition — installs Chrome, VSCode, Helm, gh CLI, kubeseal, Claude Code, OpenCode, Crush, LSP servers (pyright, typescript-language-server, gopls, clangd, rust-analyzer, lua-language-server, jdtls, kotlin-language-server, intelephense); creates non-root user (UID 1000) |
+| `Dockerfile` | Image definition — installs Chrome, VSCode, Helm, gh CLI, kubectl, k9s, Flux CLI, kubeseal, Claude Code, OpenCode, Crush, LSP servers (pyright, typescript-language-server, gopls, clangd, rust-analyzer, lua-language-server, jdtls, kotlin-language-server, intelephense); creates non-root user (UID 1000) |
 | `scripts/init-repo.sh` | Configures git credentials, clones GitHub repo(s), generates multi-root workspace file |
 | `scripts/startapp.sh` | Calls init-repo.sh then opens VSCode in the workspace |
 | `chart/` | Helm chart for Kubernetes deployment |
